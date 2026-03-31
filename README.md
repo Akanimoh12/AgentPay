@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://agent-pay.vercel.app"><strong>🌐 Live App</strong></a> · 
-  <a href="https://www.loom.com/share/YOUR_LOOM_VIDEO_ID"><strong>🎬 Demo Video</strong></a> · 
-  <a href="https://chainscan-newton.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A"><strong>📜 View on Explorer</strong></a>
+  <a href="https://agentpay-sigma.vercel.app/"><strong>🌐 Live App</strong></a> · 
+  <a href="https://www.loom.com/share/6cd494b3c10b42a8a4d258e1abb55463"><strong>🎬 Demo Video</strong></a> · 
+  <a href="https://chainscan.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A"><strong>📜 View on Explorer</strong></a>
 </p>
 
 ---
@@ -22,9 +22,9 @@
 
 | Contract | Address | Explorer |
 |---|---|---|
-| **AgentRegistry** | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://chainscan-newton.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
-| **PaymentRouter** | `0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5` | [View](https://chainscan-newton.0g.ai/address/0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5) |
-| **SplitVault** | `0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737` | [View](https://chainscan-newton.0g.ai/address/0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737) |
+| **AgentRegistry** | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://chainscan.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
+| **PaymentRouter** | `0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5` | [View](https://chainscan.0g.ai/address/0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5) |
+| **SplitVault** | `0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737` | [View](https://chainscan.0g.ai/address/0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737) |
 
 > **Network:** 0G Newton Testnet · **RPC:** `https://evmrpc-testnet.0g.ai` · **Chain ID:** `16602`
 
