@@ -1,0 +1,23 @@
+{
+  "name": "agentpay",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "contracts:compile": "pnpm --filter @agentpay/contracts compile",
+    "contracts:test": "pnpm --filter @agentpay/contracts test",
+    "contracts:deploy": "pnpm --filter @agentpay/contracts deploy",
+    "sdk:build": "pnpm --filter @agentpay/sdk build",
+    "frontend:dev": "pnpm --filter @agentpay/frontend dev",
+    "backend:dev": "pnpm --filter @agentpay/backend dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.4.0"
+  }
+}

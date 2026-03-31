@@ -6,7 +6,7 @@
 **Monorepo manager:** pnpm workspaces
 **Build orchestration:** Turborepo
 
-This is a pnpm monorepo. All packages and applications live under `packages/` and `apps/` respectively. Turborepo handles task orchestration, caching, and dependency-aware builds across the workspace.
+This is a pnpm monorepo with a flat folder structure. Each concern lives in its own root-level directory. Turborepo handles task orchestration, caching, and dependency-aware builds across the workspace.
 
 ---
 
@@ -16,7 +16,7 @@ This is a pnpm monorepo. All packages and applications live under `packages/` an
 AgentPay/
 │
 ├── package.json                        # Root package.json — workspace config, shared scripts, devDependency hoisting
-├── pnpm-workspace.yaml                 # Defines workspace packages: packages/* and apps/*
+├── pnpm-workspace.yaml                 # Defines workspace packages: contracts, sdk, frontend, backend
 ├── pnpm-lock.yaml                      # Lockfile — committed to version control
 ├── turbo.json                          # Turborepo pipeline config — build, test, lint, dev task definitions and caching
 ├── biome.json                          # Biome config — linting and formatting rules (replaces ESLint + Prettier)
@@ -24,238 +24,177 @@ AgentPay/
 ├── docker-compose.yml                  # Local dev services: PostgreSQL 16 + Redis 7
 ├── README.md                           # Project overview, architecture, usage guide, hackathon submission info
 ├── PROJECT_STRUCTURE.md                # This file — annotated directory tree and architectural decisions
-├── CONTRIBUTING.md                     # Contribution guidelines, PR process, branch naming, commit conventions
-├── CHANGELOG.md                        # Version history managed by Changesets
+├── PROMPTS.md                          # Sequential build prompts for the MVP
 ├── LICENSE                             # MIT License
 ├── .gitignore                          # Ignores: node_modules, dist, .env, coverage, typechain-types, .turbo
-├── .npmrc                              # pnpm config — strict peer dependencies, hoist patterns
-├── .changeset/                         # Changesets config and pending changeset files
-│   └── config.json                     # Changesets configuration — versioning strategy, changelog format
+├── .npmrc                              # pnpm config — strict peer dependencies, auto-install peers
 │
-├── packages/
+├── contracts/                          # Solidity smart contracts — Hardhat workspace package
+│   ├── package.json                    # Package: @agentpay/contracts — Hardhat, OpenZeppelin v5, ethers.js v6
+│   ├── hardhat.config.ts              # Hardhat config — Solidity 0.8.24, 0G Chain network, optimizer, typechain
+│   ├── tsconfig.json                  # TypeScript config for Hardhat scripts and tests
 │   │
-│   ├── contracts/                      # Solidity smart contracts — Hardhat monorepo package
-│   │   ├── package.json                # Package: @agentpay/contracts — Hardhat, OpenZeppelin, ethers.js v6
-│   │   ├── hardhat.config.ts           # Hardhat config — Solidity 0.8.24, 0G Chain network (mainnet + testnet), gas reporter, typechain
-│   │   ├── tsconfig.json               # TypeScript config for Hardhat scripts and tests
+│   ├── contracts/
+│   │   ├── core/
+│   │   │   ├── AgentRegistry.sol      # Agent registration — 0G Agent ID binding, service catalog, identity verification
+│   │   │   ├── PaymentRouter.sol      # Payment engine — direct pay, escrow creation, conditional release, fee deduction
+│   │   │   └── SplitVault.sol         # Revenue distribution — multi-party splits with basis-point precision
 │   │   │
-│   │   ├── contracts/
-│   │   │   ├── core/
-│   │   │   │   ├── AgentRegistry.sol   # Agent registration — 0G Agent ID binding, service catalog, identity verification, agent metadata
-│   │   │   │   ├── PaymentRouter.sol   # Payment engine — direct pay, escrow creation, conditional release, cancellation, fee deduction
-│   │   │   │   └── SplitVault.sol      # Revenue distribution — multi-party splits with basis-point precision, withdrawal, reconfig
-│   │   │   │
-│   │   │   ├── interfaces/
-│   │   │   │   ├── IAgentRegistry.sol  # Interface for AgentRegistry — used by PaymentRouter and SplitVault for cross-contract calls
-│   │   │   │   ├── IPaymentRouter.sol  # Interface for PaymentRouter — used by external integrators and the SDK
-│   │   │   │   └── ISplitVault.sol     # Interface for SplitVault — used by PaymentRouter when routing through splits
-│   │   │   │
-│   │   │   ├── libraries/
-│   │   │   │   ├── PaymentLib.sol      # Fee calculation logic, payment amount validation, escrow timeout math
-│   │   │   │   └── AgentLib.sol        # 0G Agent ID verification helpers, address resolution, registration data validation
-│   │   │   │
-│   │   │   └── mocks/
-│   │   │       ├── MockAgentID.sol     # Mock 0G Agent ID contract for local testing without 0G infrastructure
-│   │   │       ├── MockERC20.sol       # Mock ERC-20 token for payment testing
-│   │   │       └── MockOracle.sol      # Mock pricing oracle returning fixed prices for deterministic test scenarios
+│   │   ├── interfaces/
+│   │   │   ├── IAgentRegistry.sol     # Interface for AgentRegistry — used by PaymentRouter for cross-contract calls
+│   │   │   ├── IPaymentRouter.sol     # Interface for PaymentRouter — used by external integrators and the SDK
+│   │   │   └── ISplitVault.sol        # Interface for SplitVault
 │   │   │
-│   │   ├── ignition/
-│   │   │   └── modules/
-│   │   │       ├── AgentRegistry.ts    # Hardhat Ignition module — deploys AgentRegistry with 0G Agent ID contract address param
-│   │   │       ├── PaymentRouter.ts    # Hardhat Ignition module — deploys PaymentRouter, links to AgentRegistry
-│   │   │       ├── SplitVault.ts       # Hardhat Ignition module — deploys SplitVault, links to PaymentRouter
-│   │   │       └── FullDeploy.ts       # Hardhat Ignition module — orchestrates full protocol deployment in correct order
-│   │   │
-│   │   ├── test/
-│   │   │   ├── AgentRegistry.test.ts   # Unit tests — registration, lookup, deactivation, 0G Agent ID binding validation
-│   │   │   ├── PaymentRouter.test.ts   # Unit tests — direct pay, escrow lifecycle, conditional release, cancel, edge cases
-│   │   │   ├── SplitVault.test.ts      # Unit tests — split config, distribution math, withdrawal, multi-token support
-│   │   │   ├── integration.test.ts     # Integration tests — full payment flow across all three contracts
-│   │   │   └── helpers/
-│   │   │       ├── fixtures.ts         # Shared test fixtures — deployed contract instances, funded accounts
-│   │   │       └── constants.ts        # Test constants — mock agent IDs, default amounts, token addresses
-│   │   │
-│   │   └── typechain-types/            # Auto-generated TypeScript types from compiled contract ABIs (gitignored, built on compile)
+│   │   └── mocks/
+│   │       └── MockERC20.sol          # Mock ERC-20 token for payment testing
 │   │
-│   └── sdk/                            # TypeScript SDK — @agentpay/sdk npm package
-│       ├── package.json                # Package: @agentpay/sdk — viem v2, zod, 0G Storage SDK, 0G Compute SDK, 0G Agent ID SDK
-│       ├── tsconfig.json               # TypeScript 5.4+ strict config, path aliases
-│       ├── tsup.config.ts              # tsup bundler config — outputs CJS + ESM, generates .d.ts, entry: src/index.ts
-│       ├── vitest.config.ts            # Vitest config — test environment, coverage thresholds, mock setup
-│       │
-│       └── src/
-│           ├── index.ts                # Public API barrel export — AgentPayClient, types, utilities
-│           ├── client.ts               # AgentPayClient class — initialization with RPC url, wallet, contract addresses, 0G endpoints
-│           │
-│           ├── modules/
-│           │   ├── registry.ts         # Agent registration, lookup by ID, service catalog queries, identity verification
-│           │   ├── payments.ts         # Direct pay, escrow creation, release with proof, cancel, payment status queries
-│           │   ├── splits.ts           # SplitVault configuration, distribution execution, balance queries, withdrawal
-│           │   ├── storage.ts          # 0G Storage integration — write invoices, read payment history, query audit logs
-│           │   └── oracle.ts           # 0G Compute integration — submit pricing requests, parse price recommendations
-│           │
-│           ├── types/
-│           │   ├── agent.ts            # Agent types — AgentProfile, ServiceCatalogEntry, RegistrationParams
-│           │   ├── payment.ts          # Payment types — PaymentRequest, EscrowRecord, EscrowStatus, ReleaseProof
-│           │   ├── split.ts            # Split types — SplitConfig, SplitRecipient, DistributionRecord
-│           │   ├── invoice.ts          # Invoice types — Invoice, InvoiceLineItem, InvoiceQuery, InvoiceFilter
-│           │   ├── oracle.ts           # Oracle types — PricingRequest, PricingResponse, PriceRange
-│           │   └── schemas.ts          # Zod schemas for runtime validation of all input types
-│           │
-│           ├── utils/
-│           │   ├── addresses.ts        # Address validation, checksumming, 0G Agent ID format helpers
-│           │   ├── amounts.ts          # Token amount formatting, wei conversion, basis-point math
-│           │   ├── errors.ts           # Custom error classes — AgentPayError, EscrowNotFoundError, OracleTimeoutError
-│           │   └── constants.ts        # Contract addresses, default gas limits, supported chain IDs
-│           │
-│           ├── abis/
-│           │   ├── AgentRegistry.json  # Compiled ABI for AgentRegistry — copied from contracts build output
-│           │   ├── PaymentRouter.json  # Compiled ABI for PaymentRouter
-│           │   └── SplitVault.json     # Compiled ABI for SplitVault
-│           │
-│           └── __tests__/
-│               ├── client.test.ts      # Client initialization, config validation, connection tests
-│               ├── registry.test.ts    # Registry module unit tests with mocked contract calls
-│               ├── payments.test.ts    # Payments module unit tests — escrow lifecycle mocking
-│               ├── splits.test.ts      # Splits module unit tests — distribution math verification
-│               ├── storage.test.ts     # Storage module tests with mocked 0G Storage SDK
-│               └── oracle.test.ts      # Oracle module tests with mocked 0G Compute responses
+│   ├── ignition/
+│   │   └── modules/
+│   │       ├── AgentRegistry.ts       # Hardhat Ignition module — deploys AgentRegistry
+│   │       ├── PaymentRouter.ts       # Hardhat Ignition module — deploys PaymentRouter, links to AgentRegistry
+│   │       ├── SplitVault.ts          # Hardhat Ignition module — deploys SplitVault
+│   │       └── FullDeploy.ts          # Hardhat Ignition module — orchestrates full protocol deployment
+│   │
+│   ├── test/
+│   │   ├── AgentRegistry.test.ts      # Unit tests — registration, lookup, deactivation, duplicate reverts
+│   │   ├── PaymentRouter.test.ts      # Unit tests — direct pay, escrow lifecycle, fee deduction, edge cases
+│   │   ├── SplitVault.test.ts         # Unit tests — split config, distribution math, deactivation
+│   │   └── integration.test.ts        # Integration tests — full payment flow across all three contracts
+│   │
+│   └── typechain-types/               # Auto-generated TypeScript types (gitignored, built on compile)
 │
-├── apps/
+├── sdk/                                # TypeScript SDK — @agentpay/sdk npm package
+│   ├── package.json                    # Package: @agentpay/sdk — viem v2, zod
+│   ├── tsconfig.json                  # TypeScript 5.4+ strict config
+│   ├── tsup.config.ts                 # tsup bundler config — outputs CJS + ESM, generates .d.ts
+│   ├── vitest.config.ts               # Vitest test config
 │   │
-│   ├── api/                            # Hono.js REST API backend
-│   │   ├── package.json                # Package: @agentpay/api — hono, drizzle-orm, pg, redis, @agentpay/sdk
-│   │   ├── tsconfig.json               # TypeScript config — strict, NodeNext module resolution
-│   │   ├── vitest.config.ts            # Vitest config for API route and service tests
-│   │   ├── Dockerfile                  # Production container image — Node.js 20 Alpine, multi-stage build
-│   │   │
-│   │   └── src/
-│   │       ├── index.ts                # App entry point — Hono app creation, middleware registration, route mounting, server start
-│   │       │
-│   │       ├── routes/
-│   │       │   ├── agents.ts           # POST /agents (register), GET /agents/:id (profile), PATCH /agents/:id (update catalog)
-│   │       │   ├── payments.ts         # POST /payments (initiate), GET /payments/:id (status), GET /payments (list with filters)
-│   │       │   ├── invoices.ts         # GET /invoices (list), GET /invoices/:id (detail), POST /invoices/sync (trigger 0G Storage sync)
-│   │       │   └── oracle.ts           # POST /oracle/price (pricing request proxy to 0G Compute), GET /oracle/history (past prices)
-│   │       │
-│   │       ├── services/
-│   │       │   ├── AgentService.ts     # Agent registration logic — validates input, calls SDK registry module, persists to DB
-│   │       │   ├── PaymentService.ts   # Payment orchestration — escrow creation, release verification, status tracking
-│   │       │   ├── StorageService.ts   # 0G Storage operations — write invoice records, read history, sync on-chain events to storage
-│   │       │   └── OracleService.ts    # Oracle proxy — formats pricing requests, calls 0G Compute, caches recent prices in Redis
-│   │       │
-│   │       ├── db/
-│   │       │   ├── index.ts            # Drizzle ORM client initialization — PostgreSQL connection via pg driver
-│   │       │   ├── schema.ts           # Drizzle schema — agents, payments, escrows, invoices, oracle_prices tables
-│   │       │   └── migrations/         # SQL migration files generated by drizzle-kit
-│   │       │       └── 0001_initial.sql# Initial schema migration — creates all core tables and indexes
-│   │       │
-│   │       ├── middleware/
-│   │       │   ├── auth.ts             # API key authentication middleware — validates agent API keys from request headers
-│   │       │   ├── rateLimit.ts        # Rate limiting middleware — Redis-backed sliding window, per-agent limits
-│   │       │   └── errorHandler.ts     # Global error handler — catches exceptions, returns structured JSON error responses
-│   │       │
-│   │       └── lib/
-│   │           ├── agentpay.ts         # Singleton AgentPay SDK client instance — configured from environment variables
-│   │           ├── redis.ts            # Redis client initialization — connection config, retry logic
-│   │           ├── zgStorage.ts        # 0G Storage SDK client — configured with storage endpoint from env
-│   │           ├── zgCompute.ts        # 0G Compute SDK client — configured with compute endpoint from env
-│   │           └── config.ts           # Environment variable parsing and validation via Zod
-│   │
-│   ├── web/                            # Next.js 14 frontend — App Router
-│   │   ├── package.json                # Package: @agentpay/web — next 14, tailwindcss, wagmi v2, viem v2, @tanstack/react-query v5
-│   │   ├── next.config.ts              # Next.js config — env vars, image domains, experimental flags
-│   │   ├── tailwind.config.ts          # Tailwind CSS config — custom theme, shadcn/ui preset
-│   │   ├── tsconfig.json               # TypeScript config — strict, JSX preserve, path aliases (@/)
-│   │   ├── postcss.config.js           # PostCSS config — Tailwind CSS plugin
-│   │   ├── components.json             # shadcn/ui config — component paths, style preferences
-│   │   │
-│   │   ├── app/
-│   │   │   ├── layout.tsx              # Root layout — providers (wagmi, query client, theme), global styles, font loading
-│   │   │   ├── page.tsx                # Landing page — hero, feature overview, call-to-action to connect wallet
-│   │   │   ├── dashboard/
-│   │   │   │   ├── page.tsx            # Dashboard home — payment volume summary, recent transactions, agent status
-│   │   │   │   └── layout.tsx          # Dashboard layout — sidebar navigation, header with wallet connection
-│   │   │   ├── agents/
-│   │   │   │   ├── page.tsx            # Agent directory — browse registered agents, filter by service type
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx        # Agent detail — profile, service catalog, payment history with this agent
-│   │   │   ├── payments/
-│   │   │   │   ├── page.tsx            # Payment list — filterable table of all payments (sent, received, escrowed)
-│   │   │   │   ├── new/
-│   │   │   │   │   └── page.tsx        # New payment form — select recipient, amount, escrow options, oracle pricing
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx        # Payment detail — status, escrow timeline, split breakdown, invoice link
-│   │   │   ├── invoices/
-│   │   │   │   ├── page.tsx            # Invoice list — all invoices with status filters, date range, export
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx        # Invoice detail — full line items, 0G Storage proof, download
-│   │   │   └── api/
-│   │   │       └── [...proxy]/
-│   │   │           └── route.ts        # API proxy route — forwards client-side requests to the Hono backend
-│   │   │
-│   │   ├── components/
-│   │   │   ├── ui/                     # shadcn/ui primitives — button, card, table, dialog, dropdown, input, badge, etc.
-│   │   │   ├── features/
-│   │   │   │   ├── PaymentCard.tsx     # Payment summary card — amount, status badge, counterparty, timestamp
-│   │   │   │   ├── AgentProfile.tsx    # Agent profile display — name, ID, services, reputation score, wallet address
-│   │   │   │   ├── InvoiceFeed.tsx     # Real-time invoice feed — streaming list of recent invoices with auto-refresh
-│   │   │   │   ├── EscrowTimeline.tsx  # Escrow status timeline — visual step indicator (locked → released / cancelled)
-│   │   │   │   ├── SplitBreakdown.tsx  # Revenue split visualization — pie chart or bar showing recipient percentages
-│   │   │   │   ├── OraclePriceCard.tsx # Oracle price display — recommended price, range, confidence, refresh button
-│   │   │   │   └── WalletConnect.tsx   # Wallet connection component — wagmi connector modal, chain switching
-│   │   │   └── layouts/
-│   │   │       ├── Sidebar.tsx         # Dashboard sidebar — navigation links, agent status indicator
-│   │   │       └── Header.tsx          # Dashboard header — wallet status, notifications, settings
-│   │   │
-│   │   ├── lib/
-│   │   │   ├── wagmi.ts               # wagmi v2 config — 0G Chain definition, connectors (injected, WalletConnect)
-│   │   │   ├── viem.ts                # viem public and wallet client setup — 0G Chain transport config
-│   │   │   ├── query.ts               # TanStack Query client — default options, cache time, refetch intervals
-│   │   │   └── agentpay.ts            # Browser-side AgentPay SDK initialization — reads config from env
-│   │   │
-│   │   ├── hooks/
-│   │   │   ├── useAgentPay.ts          # Core hook — returns initialized SDK client, connection status, current agent
-│   │   │   ├── usePaymentHistory.ts    # Fetches paginated payment history via TanStack Query + SDK storage module
-│   │   │   ├── useOraclePrice.ts       # Fetches oracle pricing for a given service — debounced, with loading/error states
-│   │   │   ├── useEscrowStatus.ts      # Polls escrow status by ID — returns current state and timeline events
-│   │   │   └── useAgentRegistry.ts     # Agent search and lookup — registry queries with TanStack Query caching
-│   │   │
-│   │   └── public/
-│   │       ├── logo.svg                # AgentPay logo
-│   │       └── og-image.png            # Open Graph image for social media previews
-│   │
-│   └── demo/                           # Standalone demo scripts — used for hackathon presentation and judge testing
-│       ├── package.json                # Package: @agentpay/demo — @agentpay/sdk, tsx for TypeScript execution
-│       ├── tsconfig.json               # TypeScript config — NodeNext, strict
+│   └── src/
+│       ├── index.ts                   # Public API barrel export — AgentPayClient, types, utilities
+│       ├── client.ts                  # AgentPayClient class — initialization with RPC, wallet, contract addresses, 0G endpoints
 │       │
-│       └── src/
-│           ├── index.ts                # Demo runner — CLI menu to select and execute scenarios
-│           └── scenarios/
-│               ├── agent-registration.ts    # Registers two agents with 0G Agent ID binding and service catalogs
-│               ├── simple-payment.ts        # Agent A pays Agent B directly — no escrow, instant settlement
-│               ├── escrow-payment.ts        # Full escrow flow — lock, job execution simulation, conditional release
-│               ├── revenue-split.ts         # Configures a 3-way split, routes a payment through it, shows distribution
-│               ├── oracle-pricing.ts        # Calls the pricing oracle for a service, displays recommended price range
-│               └── full-workflow.ts         # End-to-end: register → oracle price → escrow → execute → settle → split → invoice
+│       ├── modules/
+│       │   ├── registry.ts            # Agent registration, lookup by ID, service catalog queries
+│       │   ├── payments.ts            # Direct pay, escrow creation, release, cancel, status queries
+│       │   ├── splits.ts             # SplitVault configuration, distribution execution, balance queries
+│       │   ├── storage.ts            # 0G Storage integration — write invoices, read payment history
+│       │   └── oracle.ts             # 0G Compute integration — submit pricing requests, parse price recommendations
+│       │
+│       ├── types/
+│       │   ├── index.ts              # Barrel export all types
+│       │   ├── agent.ts              # Agent types — AgentProfile, RegisterAgentParams, AgentService
+│       │   ├── payment.ts            # Payment types — PaymentRequest, EscrowRecord, EscrowStatus
+│       │   ├── split.ts              # Split types — SplitConfig, SplitRecipient, DistributionResult
+│       │   ├── invoice.ts            # Invoice types — Invoice, InvoiceLineItem, InvoiceFilter, PaginatedInvoices
+│       │   ├── oracle.ts             # Oracle types — PricingRequest, PricingResponse, PriceRange
+│       │   └── schemas.ts            # Zod schemas for runtime validation of all input types
+│       │
+│       ├── utils/
+│       │   ├── addresses.ts          # Address helpers — isNativeToken, shortenAddress
+│       │   ├── amounts.ts            # Token amount formatting, wei conversion, basis-point math
+│       │   ├── errors.ts             # Custom error classes — AgentPayError, AgentNotFoundError, etc.
+│       │   └── constants.ts          # Protocol constants — NATIVE_TOKEN, MAX_SPLIT_RECIPIENTS, BPS_DENOMINATOR
+│       │
+│       └── abis/
+│           ├── AgentRegistry.json     # ABI for AgentRegistry contract
+│           ├── PaymentRouter.json     # ABI for PaymentRouter contract
+│           └── SplitVault.json        # ABI for SplitVault contract
+│
+├── frontend/                           # Next.js 14 App Router — web application
+│   ├── package.json                    # Package: @agentpay/frontend — next 14, tailwindcss, wagmi v2, viem v2, @tanstack/react-query v5
+│   ├── next.config.ts                 # Next.js config — env vars, image domains
+│   ├── tailwind.config.ts             # Tailwind CSS config — 0G Foundation color palette, dark mode
+│   ├── tsconfig.json                  # TypeScript config — strict, JSX preserve, path aliases (@/)
+│   ├── postcss.config.js             # PostCSS config — Tailwind CSS plugin
+│   │
+│   ├── app/
+│   │   ├── layout.tsx                 # Root layout — providers (wagmi, query client), global styles, font loading
+│   │   ├── globals.css                # Tailwind directives, body styles, utility classes
+│   │   ├── page.tsx                   # Landing page — hero, features, how it works, CTA
+│   │   └── dashboard/
+│   │       ├── layout.tsx             # Dashboard layout — sidebar navigation, header with wallet connection
+│   │       ├── page.tsx               # Dashboard home — payment volume summary, recent transactions
+│   │       ├── agents/page.tsx        # Agent directory — browse registered agents
+│   │       ├── payments/page.tsx      # Payment list — filterable table of all payments
+│   │       ├── escrows/page.tsx       # Escrow management — active escrows, release/cancel actions
+│   │       ├── invoices/page.tsx      # Invoice list — all invoices with status filters
+│   │       ├── splits/page.tsx        # Revenue splits — configure and view split distributions
+│   │       └── oracle/page.tsx        # Oracle pricing — query and view price history
+│   │
+│   ├── components/
+│   │   ├── ui/                        # Base UI components — Button, Card, Badge, Input, Table, Dialog, etc.
+│   │   ├── landing/                   # Landing page sections — Hero, Features, HowItWorks, UseCases, Footer
+│   │   ├── features/                  # Feature components — PaymentCard, EscrowTimeline, SplitBreakdown, etc.
+│   │   ├── layouts/
+│   │   │   ├── Sidebar.tsx            # Dashboard sidebar — navigation links, wallet status
+│   │   │   └── Header.tsx             # Dashboard header — breadcrumb, wallet connect button
+│   │   └── providers.tsx              # Client providers — WagmiProvider, QueryClientProvider
+│   │
+│   ├── lib/
+│   │   ├── wagmi.ts                   # wagmi v2 config — 0G Chain definition, connectors
+│   │   ├── query.ts                   # TanStack Query client — default options
+│   │   └── api.ts                     # Typed API client — methods for all backend endpoints
+│   │
+│   ├── hooks/                         # React hooks — useAgentPay, usePaymentHistory, useOraclePrice, etc.
+│   │
+│   └── public/
+│       └── logo.svg                   # AgentPay logo
+│
+├── backend/                            # Hono.js REST API backend
+│   ├── package.json                    # Package: @agentpay/backend — hono, drizzle-orm, pg, redis, @agentpay/sdk
+│   ├── tsconfig.json                  # TypeScript config — strict, ESNext
+│   ├── drizzle.config.ts             # Drizzle Kit config — schema path, migration output
+│   │
+│   └── src/
+│       ├── index.ts                   # App entry point — Hono app creation, middleware, route mounting, server start
+│       │
+│       ├── routes/
+│       │   ├── agents.ts              # POST / (register), GET / (list), GET /:agentId, PATCH /:agentId/services
+│       │   ├── payments.ts            # POST /direct, POST /escrow, POST /escrow/:id/release, POST /escrow/:id/cancel, GET /
+│       │   ├── invoices.ts            # POST / (create), GET / (list), GET /:invoiceId, POST /sync
+│       │   └── oracle.ts             # POST /price, GET /history
+│       │
+│       ├── services/
+│       │   ├── AgentService.ts        # Agent registration logic — validates input, calls SDK, persists to DB
+│       │   ├── PaymentService.ts      # Payment orchestration — escrow creation, release, status tracking
+│       │   ├── StorageService.ts      # 0G Storage operations — write invoices, read history, sync events
+│       │   └── OracleService.ts       # Oracle proxy — formats pricing requests, caches in Redis
+│       │
+│       ├── db/
+│       │   ├── index.ts               # Drizzle ORM client initialization — PostgreSQL connection
+│       │   ├── schema.ts             # Drizzle schema — agents, payments, escrows, invoices, oracle_prices tables
+│       │   ├── migrate.ts            # Migration runner script
+│       │   └── migrations/            # SQL migration files generated by drizzle-kit
+│       │
+│       ├── middleware/
+│       │   ├── errorHandler.ts        # Global error handler — structured JSON error responses
+│       │   └── rateLimit.ts           # Rate limiting middleware — Redis-backed, per-IP limits
+│       │
+│       └── lib/
+│           ├── agentpay.ts            # Singleton AgentPay SDK client instance
+│           ├── redis.ts               # Redis client initialization — getCache, setCache helpers
+│           ├── config.ts              # Environment variable parsing and validation via Zod
+│           ├── zgStorage.ts           # 0G Storage wrapper — storeInvoice, fetchInvoice, fetchAgentHistory
+│           └── zgCompute.ts           # 0G Compute wrapper — fetchOraclePrice with Redis caching
 │
 ├── docs/                               # Project documentation
-│   ├── architecture.md                 # System design — three-layer architecture, data flow, component interaction diagrams
-│   ├── contracts.md                    # Contract reference — every function, parameter, event, with plain English descriptions
-│   ├── sdk-reference.md               # SDK method reference — every public method, params, return types, usage notes
-│   ├── 0g-integration.md              # Detailed guide for each 0G component integration — Chain, Storage, Compute, Agent ID
-│   └── deployment.md                  # Step-by-step mainnet deployment — contract deployment, verification, SDK config
+│   ├── README.md                      # Documentation index
+│   ├── architecture.md               # System design — three-layer architecture, data flow diagrams
+│   ├── contracts.md                   # Contract reference — every function, parameter, event
+│   ├── sdk-reference.md              # SDK method reference — public methods, params, return types
+│   ├── 0g-integration.md             # Guide for each 0G component integration
+│   └── deployment.md                 # Step-by-step deployment guide
 │
 ├── scripts/                            # Utility and operational scripts
-│   ├── seed-agents.ts                  # Seeds test agents into the registry on a target network
-│   ├── verify-contracts.ts             # Runs contract verification on 0G block explorer
-│   └── sync-abis.ts                    # Copies compiled ABIs from contracts/typechain-types to sdk/src/abis
+│   ├── seed-agents.ts                 # Seeds test agents into the registry
+│   ├── verify-contracts.ts            # Contract verification on 0G block explorer
+│   └── sync-abis.ts                   # Copies compiled ABIs from contracts to sdk/src/abis
 │
 └── .github/
     └── workflows/
-        ├── ci.yml                      # PR pipeline — install, lint (Biome), test (all packages), build (all packages), typecheck
-        ├── deploy-contracts.yml        # Manual trigger — deploys contracts to 0G mainnet via Hardhat Ignition
-        └── publish-sdk.yml             # Triggered on release tag — builds SDK, publishes @agentpay/sdk to npm
+        ├── ci.yml                     # PR pipeline — install, lint, test, build, typecheck
+        ├── deploy-contracts.yml       # Manual trigger — deploys contracts to 0G Chain
+        └── publish-sdk.yml            # Triggered on release tag — publishes @agentpay/sdk to npm
 ```
 
 ---
@@ -301,14 +240,10 @@ All commands are run from the repository root. Turborepo handles dependency orde
 | `pnpm contracts:compile` | contracts | Compile Solidity contracts with Hardhat |
 | `pnpm contracts:test` | contracts | Run contract unit and integration tests |
 | `pnpm contracts:deploy` | contracts | Deploy contracts to 0G Chain via Hardhat Ignition (uses `DEPLOYER_PRIVATE_KEY`) |
-| `pnpm contracts:verify` | contracts | Verify deployed contracts on 0G block explorer |
 | `pnpm sdk:build` | sdk | Build SDK — outputs CJS + ESM to `dist/` |
 | `pnpm sdk:test` | sdk | Run SDK unit tests with Vitest |
-| `pnpm api:dev` | api | Start API server in development mode with hot reload |
-| `pnpm api:test` | api | Run API route and service tests |
-| `pnpm web:dev` | web | Start Next.js dev server on port 3000 |
-| `pnpm web:build` | web | Production build of the Next.js frontend |
-| `pnpm demo:run` | demo | Launch the interactive demo scenario runner |
+| `pnpm frontend:dev` | frontend | Start Next.js dev server on port 3000 |
+| `pnpm backend:dev` | backend | Start API server in development mode with hot reload |
 | `pnpm db:migrate` | api | Run Drizzle ORM database migrations |
 | `pnpm db:generate` | api | Generate migration files from schema changes |
 | `pnpm sync:abis` | scripts | Copy compiled ABIs from contracts to SDK package |
@@ -321,17 +256,17 @@ All commands are run from the repository root. Turborepo handles dependency orde
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                    apps/web                           │
+│                    frontend                           │
 │                  (Next.js 14)                         │
 │                       │                              │
 │                       │ imports                      │
 │                       ▼                              │
-│  apps/api ────────► packages/sdk ◄──── apps/demo    │
-│  (Hono.js)    imports  (TypeScript)  imports         │
+│  backend ─────────► sdk ◄─────────────────────────  │
+│  (Hono.js)    imports  (TypeScript)                  │
 │                       │                              │
 │                       │ imports ABIs                 │
 │                       ▼                              │
-│               packages/contracts                     │
+│                   contracts                          │
 │                 (Hardhat / Solidity)                  │
 └──────────────────────────────────────────────────────┘
 ```
@@ -340,13 +275,12 @@ All commands are run from the repository root. Turborepo handles dependency orde
 
 | Consumer | Depends On | What It Uses |
 |---|---|---|
-| `apps/web` | `packages/sdk` | SDK client, types, hooks wrap SDK methods |
-| `apps/api` | `packages/sdk` | SDK client for on-chain operations inside API services |
-| `apps/demo` | `packages/sdk` | SDK client for running demo scenarios |
-| `packages/sdk` | `packages/contracts` | Compiled ABI JSON files (copied via `sync:abis` script) |
-| `apps/web` | `apps/api` | Runtime HTTP dependency (not a package dependency) — frontend calls API endpoints |
+| `frontend` | `sdk` | SDK client, types, hooks wrap SDK methods |
+| `backend` | `sdk` | SDK client for on-chain operations inside API services |
+| `sdk` | `contracts` | Compiled ABI JSON files (copied via `sync:abis` script) |
+| `frontend` | `backend` | Runtime HTTP dependency (not a package dependency) — frontend calls API endpoints |
 
-The `packages/contracts` package has no internal dependencies — it is the leaf node. Changes to contracts trigger a rebuild chain: contracts → sdk → api + web + demo.
+The `contracts` package has no internal dependencies — it is the leaf node. Changes to contracts trigger a rebuild chain: contracts → sdk → backend + frontend.
 
 ---
 
@@ -398,25 +332,24 @@ This section maps every file in the project that directly interacts with a 0G co
 
 | File | Interaction |
 |---|---|
-| `packages/contracts/contracts/core/*.sol` | All three core contracts deployed to and executed on 0G Chain |
-| `packages/contracts/hardhat.config.ts` | 0G Chain network configuration (RPC URL, chain ID, gas settings) |
-| `packages/contracts/ignition/modules/*.ts` | Deployment modules target 0G Chain |
-| `packages/sdk/src/client.ts` | Initializes viem clients connected to 0G Chain RPC |
-| `packages/sdk/src/modules/registry.ts` | Reads/writes to AgentRegistry contract on 0G Chain |
-| `packages/sdk/src/modules/payments.ts` | Submits payment and escrow transactions to PaymentRouter on 0G Chain |
-| `packages/sdk/src/modules/splits.ts` | Configures and triggers SplitVault operations on 0G Chain |
-| `apps/api/src/lib/agentpay.ts` | Backend SDK client connected to 0G Chain for server-side operations |
-| `apps/web/lib/viem.ts` | Browser-side viem client configured for 0G Chain |
-| `apps/web/lib/wagmi.ts` | wagmi config with 0G Chain definition for wallet connections |
+| `contracts/contracts/core/*.sol` | All three core contracts deployed to and executed on 0G Chain |
+| `contracts/hardhat.config.ts` | 0G Chain network configuration (RPC URL, chain ID, gas settings) |
+| `contracts/ignition/modules/*.ts` | Deployment modules target 0G Chain |
+| `sdk/src/client.ts` | Initializes viem clients connected to 0G Chain RPC |
+| `sdk/src/modules/registry.ts` | Reads/writes to AgentRegistry contract on 0G Chain |
+| `sdk/src/modules/payments.ts` | Submits payment and escrow transactions to PaymentRouter on 0G Chain |
+| `sdk/src/modules/splits.ts` | Configures and triggers SplitVault operations on 0G Chain |
+| `backend/src/lib/agentpay.ts` | Backend SDK client connected to 0G Chain for server-side operations |
+| `frontend/lib/wagmi.ts` | wagmi config with 0G Chain definition for wallet connections |
 
 ### 0G Storage
 
 | File | Interaction |
 |---|---|
-| `packages/sdk/src/modules/storage.ts` | Core 0G Storage integration — writes invoice JSON, reads payment history, queries audit logs |
-| `apps/api/src/lib/zgStorage.ts` | Server-side 0G Storage client initialization |
-| `apps/api/src/services/StorageService.ts` | Business logic for syncing on-chain events to 0G Storage, querying stored invoices |
-| `apps/api/src/routes/invoices.ts` | API endpoints that trigger 0G Storage reads (invoice list) and writes (sync) |
+| `sdk/src/modules/storage.ts` | Core 0G Storage integration — writes invoice JSON, reads payment history, queries audit logs |
+| `backend/src/lib/zgStorage.ts` | Server-side 0G Storage client initialization |
+| `backend/src/services/StorageService.ts` | Business logic for syncing on-chain events to 0G Storage, querying stored invoices |
+| `backend/src/routes/invoices.ts` | API endpoints that trigger 0G Storage reads (invoice list) and writes (sync) |
 
 **Data stored:** Invoice records (JSON), agent payment history (append-only logs), protocol audit events.
 
@@ -424,11 +357,10 @@ This section maps every file in the project that directly interacts with a 0G co
 
 | File | Interaction |
 |---|---|
-| `packages/sdk/src/modules/oracle.ts` | Submits pricing inference requests to 0G Compute, parses model response into PriceRange |
-| `apps/api/src/lib/zgCompute.ts` | Server-side 0G Compute client initialization |
-| `apps/api/src/services/OracleService.ts` | Wraps oracle calls with Redis caching, request formatting, error handling |
-| `apps/api/src/routes/oracle.ts` | REST endpoint proxying pricing requests to 0G Compute for agents that use HTTP |
-| `apps/demo/src/scenarios/oracle-pricing.ts` | Demo scenario that calls the pricing oracle and displays results |
+| `sdk/src/modules/oracle.ts` | Submits pricing inference requests to 0G Compute, parses model response into PriceRange |
+| `backend/src/lib/zgCompute.ts` | Server-side 0G Compute client initialization |
+| `backend/src/services/OracleService.ts` | Wraps oracle calls with Redis caching, request formatting, error handling |
+| `backend/src/routes/oracle.ts` | REST endpoint proxying pricing requests to 0G Compute for agents that use HTTP |
 
 **Model invoked:** AI pricing model that accepts service type, historical rates, demand signals, and reputation score as inputs. Returns floor, suggested, and ceiling price.
 
@@ -436,10 +368,9 @@ This section maps every file in the project that directly interacts with a 0G co
 
 | File | Interaction |
 |---|---|
-| `packages/contracts/contracts/core/AgentRegistry.sol` | Verifies 0G Agent ID during agent registration, stores binding between Agent ID and wallet |
-| `packages/contracts/contracts/libraries/AgentLib.sol` | Helper functions for 0G Agent ID verification and address resolution |
-| `packages/sdk/src/modules/registry.ts` | Passes 0G Agent ID during registration calls, resolves agent addresses from IDs |
-| `apps/api/src/services/AgentService.ts` | Validates 0G Agent ID format before submitting registration transactions |
-| `apps/demo/src/scenarios/agent-registration.ts` | Demo scenario that registers agents with 0G Agent ID binding |
+| `contracts/contracts/core/AgentRegistry.sol` | Verifies 0G Agent ID during agent registration, stores binding between Agent ID and wallet |
+| `contracts/contracts/libraries/AgentLib.sol` | Helper functions for 0G Agent ID verification and address resolution |
+| `sdk/src/modules/registry.ts` | Passes 0G Agent ID during registration calls, resolves agent addresses from IDs |
+| `backend/src/services/AgentService.ts` | Validates 0G Agent ID format before submitting registration transactions |
 
 **Identity flow:** Agent creates 0G Agent ID → binds wallet → registers in AgentRegistry (which cross-references the 0G Agent ID) → all subsequent protocol operations verify identity through this chain.

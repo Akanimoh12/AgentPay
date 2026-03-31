@@ -265,30 +265,24 @@ Social media agents that create content, curate feeds, or moderate communities r
 
 ```
 AgentPay/
-├── packages/
-│   ├── contracts/          # Solidity smart contracts (Hardhat)
-│   │   ├── contracts/      # Core protocol contracts
-│   │   ├── ignition/       # Hardhat Ignition deployment modules
-│   │   ├── test/           # Contract unit and integration tests
-│   │   └── typechain-types/# Auto-generated TypeScript bindings
-│   └── sdk/                # TypeScript SDK for AgentPay protocol
-│       ├── src/modules/    # Registry, payments, splits, storage, oracle modules
-│       ├── src/types/      # TypeScript types and Zod schemas
-│       └── src/utils/      # Address helpers, formatters, error classes
-├── apps/
-│   ├── api/                # Hono.js backend API
-│   │   ├── src/routes/     # REST endpoints for agents, payments, invoices
-│   │   ├── src/services/   # Business logic layer
-│   │   └── src/db/         # Drizzle ORM schema and migrations
-│   ├── web/                # Next.js 14 frontend dashboard
-│   │   ├── app/            # App Router pages and layouts
-│   │   ├── components/     # UI primitives and domain components
-│   │   └── hooks/          # Custom React hooks for AgentPay
-│   └── demo/               # Runnable demo scenarios for hackathon
-│       └── src/scenarios/  # Individual demo scripts
+├── contracts/              # Solidity smart contracts (Hardhat)
+│   ├── contracts/          # Core protocol contracts
+│   ├── ignition/           # Hardhat Ignition deployment modules
+│   ├── test/               # Contract unit and integration tests
+│   └── typechain-types/    # Auto-generated TypeScript bindings
+├── sdk/                    # TypeScript SDK for AgentPay protocol
+│   ├── src/modules/        # Registry, payments, splits, storage, oracle modules
+│   ├── src/types/          # TypeScript types and Zod schemas
+│   └── src/utils/          # Address helpers, formatters, error classes
+├── backend/                # Hono.js backend API
+│   ├── src/routes/         # REST endpoints for agents, payments, invoices
+│   ├── src/services/       # Business logic layer
+│   └── src/db/             # Drizzle ORM schema and migrations
+├── frontend/               # Next.js 14 frontend dashboard
+│   ├── app/                # App Router pages and layouts
+│   ├── components/         # UI primitives and domain components
+│   └── hooks/              # Custom React hooks for AgentPay
 ├── docs/                   # Architecture, SDK reference, deployment guides
-├── scripts/                # Utility scripts (seed data, contract verification)
-├── .github/workflows/      # CI/CD pipelines
 ├── turbo.json              # Turborepo build orchestration config
 ├── pnpm-workspace.yaml     # pnpm workspace definitions
 ├── biome.json              # Linting and formatting (replaces ESLint + Prettier)
