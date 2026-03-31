@@ -1,0 +1,27 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+typechain-types
+contracts/artifacts
+contracts/cache
+cache
+.DS_Store
+*.tsbuildinfo
+
+# Environment files (contain private keys & secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Build artifacts (large)
+contracts/ignition/deployments/*/build-info
+contracts/artifacts
+
+# OS
+Thumbs.db
+
+BUILD.md
