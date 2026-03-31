@@ -6,9 +6,27 @@
 <p align="center">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License" />
-  <img src="https://img.shields.io/badge/chain-0G%20Mainnet-6366f1" alt="0G Chain" />
+  <img src="https://img.shields.io/badge/chain-0G%20Testnet-6366f1" alt="0G Chain" />
   <img src="https://img.shields.io/badge/hackathon-0G%20APAC%202026%20%7C%20Track%203-orange" alt="0G APAC Hackathon 2026" />
 </p>
+
+<p align="center">
+  <a href="https://agent-pay.vercel.app"><strong>🌐 Live App</strong></a> · 
+  <a href="https://www.loom.com/share/YOUR_LOOM_VIDEO_ID"><strong>🎬 Demo Video</strong></a> · 
+  <a href="https://chainscan-newton.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A"><strong>📜 View on Explorer</strong></a>
+</p>
+
+---
+
+## Deployed Contracts (0G Testnet — Chain ID 16602)
+
+| Contract | Address | Explorer |
+|---|---|---|
+| **AgentRegistry** | `0xfd2f67cD354545712f9d8230170015d7e30d133A` | [View](https://chainscan-newton.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
+| **PaymentRouter** | `0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5` | [View](https://chainscan-newton.0g.ai/address/0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5) |
+| **SplitVault** | `0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737` | [View](https://chainscan-newton.0g.ai/address/0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737) |
+
+> **Network:** 0G Newton Testnet · **RPC:** `https://evmrpc-testnet.0g.ai` · **Chain ID:** `16602`
 
 ---
 
@@ -320,9 +338,9 @@ AgentPay/
 
 | Contract | Purpose | Key Functions | Deployment Address |
 |---|---|---|---|
-| **AgentRegistry** | Manages agent identities, service catalogs, and 0G Agent ID cross-references | Register agent with 0G Agent ID binding; update service catalog; look up agent by ID; verify agent identity; deactivate agent | `0x_PLACEHOLDER_REGISTRY` |
-| **PaymentRouter** | Handles all payment flows: direct transfers, escrow, conditional release, cancellations | Send direct payment; create escrow with conditions and deadline; release escrow on completion proof; cancel and refund expired escrow; query escrow status | `0x_PLACEHOLDER_ROUTER` |
-| **SplitVault** | Distributes revenue across multiple recipients according to configured split ratios | Configure split with recipients and basis-point percentages; process incoming payment through split; withdraw accumulated balance; update split configuration; query split details | `0x_PLACEHOLDER_SPLIT` |
+| **AgentRegistry** | Manages agent identities, service catalogs, and 0G Agent ID cross-references | Register agent with 0G Agent ID binding; update service catalog; look up agent by ID; verify agent identity; deactivate agent | `0xfd2f67cD354545712f9d8230170015d7e30d133A` |
+| **PaymentRouter** | Handles all payment flows: direct transfers, escrow, conditional release, cancellations | Send direct payment; create escrow with conditions and deadline; release escrow on completion proof; cancel and refund expired escrow; query escrow status | `0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5` |
+| **SplitVault** | Distributes revenue across multiple recipients according to configured split ratios | Configure split with recipients and basis-point percentages; process incoming payment through split; withdraw accumulated balance; update split configuration; query split details | `0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737` |
 | **PaymentLib** | Shared library for fee calculations and payment validation | Calculate protocol fee; validate payment amounts; compute split distributions | — (library, linked at deploy) |
 | **AgentLib** | Shared library for identity helpers and 0G Agent ID utilities | Verify 0G Agent ID binding; resolve agent address from ID; validate registration data | — (library, linked at deploy) |
 
@@ -375,11 +393,12 @@ AgentPay/
 | **Track** | Track 3: Agentic Economy |
 | **Prize Target** | Agentic Economy Track Prize |
 | **0G Components Used** | 0G Chain, 0G Storage, 0G Compute, 0G Agent ID |
-| **Mainnet Contract — AgentRegistry** | `0x_PLACEHOLDER` |
-| **Mainnet Contract — PaymentRouter** | `0x_PLACEHOLDER` |
-| **Mainnet Contract — SplitVault** | `0x_PLACEHOLDER` |
-| **0G Explorer** | [View on 0G Explorer](https://explorer.0g.ai/address/0x_PLACEHOLDER) |
-| **Demo Video** | [Link to Demo] |
+| **Testnet Contract — AgentRegistry** | `0xfd2f67cD354545712f9d8230170015d7e30d133A` |
+| **Testnet Contract — PaymentRouter** | `0xc97C6656c19fB9Dc0F9Bc384632e05d4782150C5` |
+| **Testnet Contract — SplitVault** | `0xA5dd225Beb2Ec0009Fe143eb0B9309Ba07d23737` |
+| **0G Explorer** | [View on 0G Explorer](https://chainscan-newton.0g.ai/address/0xfd2f67cD354545712f9d8230170015d7e30d133A) |
+| **Live App** | [agent-pay.vercel.app](https://agent-pay.vercel.app) |
+| **Demo Video** | [Watch on Loom](https://www.loom.com/share/YOUR_LOOM_VIDEO_ID) |
 
 ---
 

@@ -1,6 +1,6 @@
 {
-  "installCommand": "pnpm install --filter @agentpay/frontend... --frozen-lockfile=false",
-  "buildCommand": "cd frontend && pnpm build",
+  "installCommand": "npm install --prefix sdk && cd sdk && npx tsup && cd .. && npm install --prefix frontend",
+  "buildCommand": "cd frontend && npx next build",
   "outputDirectory": "frontend/.next",
   "framework": "nextjs"
 }
