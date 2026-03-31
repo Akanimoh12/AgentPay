@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install --prefix sdk && cd sdk && npx tsup && cd .. && npm install --prefix frontend",
+  "installCommand": "cd sdk && npm install && npx tsup && cd ../frontend && npm install",
   "buildCommand": "cd frontend && npx next build",
   "outputDirectory": "frontend/.next",
   "framework": "nextjs"
